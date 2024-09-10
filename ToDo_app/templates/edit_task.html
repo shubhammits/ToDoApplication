@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Task</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Edit Task</h1>
+        </header>
+        <main>
+            <form action="/edit_task/{{ task.id }}" method="POST">
+                <input type="text" name="task" value="{{ task.task }}" required>
+                <input type="date" name="due_date" value="{{ task.due_date }}">
+                <button type="submit">Update</button>
+                <a href="/" class="cancel-btn">Cancel</a>
+            </form>
+        </main>
+    </div>
+</body>
+</html>

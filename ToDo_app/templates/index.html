@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ToDo List Application</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>ToDo List</h1>
+        </header>
+        <main>
+            <form id="todo-form" action="/add_todo" method="POST">
+                <input type="text" name="task" placeholder="Add a new task" required>
+                <input type="date" name="due_date">
+                <select name="priority" required>
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                </select>
+                <button type="submit">Add</button>
+            </form>
+
+            <input type="text" id="search" placeholder="Search tasks...">
+            <select id="sort" onchange="sortTasks()">
+                <option value="date">Sort by Date</option>
+                <option value="priority">Sort by Priority</option>
+                <option value="name">Sort by Name</option>
+            </select>
+
+            <ul id="todo-list">
+                {% for task in tasks %}
+                <li class="{{ task.priority }} {{ 'completed' if task.completed else '' }}">
+                    <div class="task-details">
+                        <input type="checkbox" {{ 'checked' if task.completed else '' }} disabled>
+                        {{ task.task }}
+                        {% if task.due_date %}
+                            <span class="due-date">{{ task.due_date }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="actions">
+                        {% if task.completed %}
+                            <a href="/not_completed/{{ task.id }}" class="not-completed-btn">Not Completed</a>
+                        {% else %}
+                            <a href="/complete/{{ task.id }}" class="complete-btn">Complete</a>
+                        {% endif %}
+                        <a href="/edit/{{ task.id }}" class="edit-btn">Edit</a>
+                        <a href="/delete/{{ task.id }}" class="delete-btn">Delete</a>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+        </main>
+    </div>
+    <script>
+    document.getElementById('search').addEventListener('keyup', function() {
+        let filter = this.value.toLowerCase();
+        let tasks = document.querySelectorAll('#todo-list li');
+        tasks.forEach(task => {
+            let text = task.textContent.toLowerCase();
+            if (text.includes(filter)) {
+                task.style.display = '';
+            } else {
+                task.style.display = 'none';
+            }
+        });
+    });
+
+    function sortTasks() {
+        let sortBy = document.getElementById('sort').value;
+        let tasks = Array.from(document.querySelectorAll('#todo-list li'));
+
+        tasks.sort((a, b) => {
+            let aValue, bValue;
+            if (sortBy === 'date') {
+                aValue = a.querySelector('.due-date') ? a.querySelector('.due-date').textContent : '';
+                bValue = b.querySelector('.due-date') ? b.querySelector('.due-date').textContent : '';
+                return new Date(aValue) - new Date(bValue);
+            } else if (sortBy === 'priority') {
+                let priorityOrder = { 'low': 1, 'medium': 2, 'high': 3 };
+                aValue = a.className.includes('low') ? 'low' : a.className.includes('medium') ? 'medium' : 'high';
+                bValue = b.className.includes('low') ? 'low' : b.className.includes('medium') ? 'medium' : 'high';
+                return priorityOrder[aValue] - priorityOrder[bValue];
+            } else {
+                aValue = a.textContent.toLowerCase();
+                bValue = b.textContent.toLowerCase();
+                return aValue.localeCompare(bValue);
+            }
+        });
+
+        let ul = document.getElementById('todo-list');
+        ul.innerHTML = '';
+        tasks.forEach(task => ul.appendChild(task));
+    }
+    </script>
+</body>
+</html>
